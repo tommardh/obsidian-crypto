@@ -5,7 +5,7 @@ import {
 	DEFAULT_SETTINGS
 } from './src/interfaces';
 import { SampleModal } from './src/sampleModal';
-import { encrypt, decrypt } from './src/crypto';
+import { encrypt, decrypt } from './src/myCrypto';
 import { EditorModal } from './src/editorModal';
 
 export default class MyPlugin extends Plugin {

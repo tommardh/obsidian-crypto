@@ -1,14 +1,12 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
-}
-
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
-}
+import { Editor, MarkdownView, Notice, Plugin } from 'obsidian';
+import { SampleSettingTab } from './src/SampleSettingTab';
+import { 
+	MyPluginSettings,
+	DEFAULT_SETTINGS
+} from './src/interfaces';
+import { SampleModal } from './src/sampleModal';
+import { encrypt, decrypt } from './src/crypto';
+import { EditorModal } from './src/editorModal';
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
@@ -26,7 +24,17 @@ export default class MyPlugin extends Plugin {
 
 		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
 		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+		const text = 'Crypto';
+		statusBarItemEl.setText(text);
+
+		this.registerMarkdownCodeBlockProcessor("crypto", (source, el, ctx) => {
+			const decrypted = decrypt(source);
+			const rows = decrypted.split("\n").filter((row) => row.length > 0);
+			const div = el.createEl("div", { cls: "crypto" });
+			for (let i = 0; i < rows.length; i++) {
+				div.createEl("p", { text: rows[i] });
+			}
+		});
 
 		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
@@ -40,9 +48,14 @@ export default class MyPlugin extends Plugin {
 		this.addCommand({
 			id: 'sample-editor-command',
 			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
+			editorCallback: (editor: Editor, _view: MarkdownView) => {
+				const selected = editor.getSelection();
+				const decrypted = decrypt(selected);		
+				new EditorModal(this.app, decrypted, (result) => {
+					new Notice(`Hello, ${result}!`);
+					const encrypted = encrypt(result);
+					editor.replaceSelection(encrypted);
+				}).open();
 			}
 		});
 		// This adds a complex command that can check whether the current state of the app allows execution of the command
@@ -91,47 +104,4 @@ export default class MyPlugin extends Plugin {
 	}
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
 
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
-
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
-}
-
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const {containerEl} = this;
-
-		containerEl.empty();
-
-		containerEl.createEl('h2', {text: 'Settings for my awesome plugin.'});
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
-	}
-}

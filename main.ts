@@ -5,14 +5,16 @@ import {
 	DEFAULT_SETTINGS
 } from './src/interfaces';
 import { SampleModal } from './src/sampleModal';
-import { encrypt, decrypt } from './src/myCrypto';
+import { MyCrypto } from './src/myCrypto';
 import { EditorModal } from './src/editorModal';
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
+	myCrypto: MyCrypto;
 
 	async onload() {
 		await this.loadSettings();
+		this.myCrypto = new MyCrypto(this.settings.secretPath);
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
@@ -28,7 +30,7 @@ export default class MyPlugin extends Plugin {
 		statusBarItemEl.setText(text);
 
 		this.registerMarkdownCodeBlockProcessor("crypto", (source, el, ctx) => {
-			const decrypted = decrypt(source);
+			const decrypted = this.myCrypto.decrypt(source);
 			const rows = decrypted.split("\n").filter((row) => row.length > 0);
 			const div = el.createEl("div", { cls: "crypto" });
 			for (let i = 0; i < rows.length; i++) {
@@ -50,14 +52,40 @@ export default class MyPlugin extends Plugin {
 			name: 'Sample editor command',
 			editorCallback: (editor: Editor, _view: MarkdownView) => {
 				const selected = editor.getSelection();
-				const decrypted = decrypt(selected);		
+				const decrypted = this.myCrypto.decrypt(selected);		
 				new EditorModal(this.app, decrypted, (result) => {
 					new Notice(`Hello, ${result}!`);
-					const encrypted = encrypt(result);
+					const encrypted = this.myCrypto.encrypt(result);
 					editor.replaceSelection(encrypted);
 				}).open();
 			}
 		});
+
+		// This adds an editor command that can perform some operation on the current editor instance
+		this.addCommand({
+			id: 'encrypt-command',
+			name: 'Encrypt',
+			editorCallback: (editor: Editor, _view: MarkdownView) => {
+				const selected = editor.getSelection();
+				const encrypted = this.myCrypto.encrypt(selected);
+				const block = '```crypto\n' + encrypted + '\n```';
+				editor.replaceSelection(block);
+			}
+		});
+
+		this.addCommand({
+			id: 'new-crypto-command',
+			name: 'New',
+			editorCallback: (editor: Editor, _view: MarkdownView) => {
+				const selected = '';
+				new EditorModal(this.app, selected, (result) => {
+					const encrypted = this.myCrypto.encrypt(result);
+					const block = '```crypto\n' + encrypted + '\n```';
+					editor.replaceSelection(block);
+					}).open();
+			}
+		});
+
 		// This adds a complex command that can check whether the current state of the app allows execution of the command
 		this.addCommand({
 			id: 'open-sample-modal-complex',

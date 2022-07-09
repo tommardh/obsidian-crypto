@@ -1,7 +1,7 @@
 export interface MyPluginSettings {
-	mySetting: string;
+	secretPath: string;
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+	secretPath: ''
 }

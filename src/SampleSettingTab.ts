@@ -14,18 +14,19 @@ export class SampleSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Settings for my awesome plugin.' });
+		containerEl.createEl('h2', { text: 'Settings for Osidian Crypto.' });
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
+			.setName('Path to crypto key file (including file name)')
+			.setDesc('Use path to local file and encrypted files can only be read with this device.')
 			.addText((text: TextComponent) => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
+				.setPlaceholder('Enter absolute path')
+				.setValue(this.plugin.settings.secretPath)
 				.onChange(async (value: string) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
+					console.log('secretpath: ' + value);
+					this.plugin.settings.secretPath = value;
 					await this.plugin.saveSettings();
-				}));
+					this.plugin.myCrypto.updateSecretPath(value);
+				}));	
 	}
 }

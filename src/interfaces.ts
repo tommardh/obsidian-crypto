@@ -3,5 +3,5 @@ export interface MyPluginSettings {
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
-	secretPath: ''
+	secretPath: './secret.json'
 }

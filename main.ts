@@ -1,5 +1,5 @@
 import { Editor, MarkdownPostProcessorContext, MarkdownView, Notice, Plugin } from 'obsidian';
-import { SampleSettingTab } from './src/SampleSettingTab';
+import { CryptoSettingTab } from './src/CryptoSettingTab';
 import { 
 	MyPluginSettings,
 	DEFAULT_SETTINGS
@@ -26,22 +26,26 @@ export default class MyPlugin extends Plugin {
 			}
 		});
 
-		// This adds an editor command that can perform some operation on the current editor instance
 		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
+			id: 'edit-crypto-command',
+			name: 'Edit',
 			editorCallback: (editor: Editor, _view: MarkdownView) => {
 				const selected = editor.getSelection();
-				const decrypted = this.myCrypto.decrypt(selected);		
-				new EditorModal(this.app, decrypted, (result) => {
-					new Notice(`Hello, ${result}!`);
+				const decrypted = this.myCrypto.decrypt(selected);
+				console.log('decrypted:', decrypted);
+				if (['Wrong key!', 'No key available!', 'Error: Not possible to decode!'].includes(decrypted)) {
+					new Notice(decrypted);
+					return;
+				}
+				const stringToEdit = (decrypted === 'Empty!') ? '' : decrypted;
+				console.log('string to edit:', stringToEdit);
+				new EditorModal(this.app, stringToEdit, (result) => {
 					const encrypted = this.myCrypto.encrypt(result);
 					editor.replaceSelection(encrypted);
 				}).open();
 			}
 		});
 
-		// This adds an editor command that can perform some operation on the current editor instance
 		this.addCommand({
 			id: 'encrypt-command',
 			name: 'Encrypt',
@@ -66,8 +70,7 @@ export default class MyPlugin extends Plugin {
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new CryptoSettingTab(this.app, this));
 	}
 
 	onunload() {

@@ -1,7 +1,6 @@
-import { App, PluginSettingTab, Setting, TextComponent } from 'obsidian';
+import { App, PluginSettingTab, Setting, TextComponent, } from 'obsidian'; // , Notice } from 'obsidian';
 import MyPlugin from '../main';
-
-export class SampleSettingTab extends PluginSettingTab {
+export class CryptoSettingTab extends PluginSettingTab {
 	public plugin: MyPlugin;
 
 	constructor(app: App, plugin: MyPlugin) {
@@ -23,10 +22,11 @@ export class SampleSettingTab extends PluginSettingTab {
 				.setPlaceholder('Enter absolute path')
 				.setValue(this.plugin.settings.secretPath)
 				.onChange(async (value: string) => {
-					console.log('secretpath: ' + value);
+					// console.log('secretpath: ' + value);
 					this.plugin.settings.secretPath = value;
 					await this.plugin.saveSettings();
 					this.plugin.myCrypto.updateSecretPath(value);
+					// new Notice('Path to crypto key file updated!');
 				}));	
 	}
 }

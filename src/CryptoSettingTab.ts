@@ -27,6 +27,19 @@ export class CryptoSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 					this.plugin.myCrypto.updateSecretPath(value);
 					// new Notice('Path to crypto key file updated!');
-				}));	
+				})
+			);
+		new Setting(containerEl)
+			.setName('show decrypted')
+			.setDesc(
+				'shows encrypted data unencrypted',
+			)
+			.addToggle((toggle) =>
+				toggle.setValue(this.plugin.settings.showDecrypted).onChange((value) => {
+					this.plugin.settings.showDecrypted = value;
+					this.plugin.saveData(this.plugin.settings);
+					this.display();
+				}),
+			);
 	}
 }

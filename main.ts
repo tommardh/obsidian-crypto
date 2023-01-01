@@ -18,8 +18,13 @@ export default class MyPlugin extends Plugin {
 		// this.registerMarkdownCodeBlockProcessor("crypto", this.myCrypto.cryptoProcessor);
 
 		this.registerMarkdownCodeBlockProcessor("crypto", (source: string, el: HTMLElement, _ctx: MarkdownPostProcessorContext) => {
-			const decrypted = this.myCrypto.decrypt(source);
-			const rows = decrypted.split("\n").filter((row) => row.length > 0);
+			let rows: string [] = [];
+			if (this.settings.showDecrypted) {
+				const decrypted = this.myCrypto.decrypt(source);
+				rows = decrypted.split("\n").filter((row) => row.length > 0);
+			} else {
+				rows = source.split("\n").filter((row) => row.length > 0);
+			}
 			const div = el.createEl("div", { cls: "crypto" });
 			for (let i = 0; i < rows.length; i++) {
 				div.createEl("p", { text: rows[i] });
